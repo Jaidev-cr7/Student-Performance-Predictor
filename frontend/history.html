@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction History</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #020202;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.4);
+            animation: float 10s infinite linear;
+            filter: blur(2px);
+        }
+        @keyframes float {
+            from { transform: translateY(110vh); }
+            to { transform: translateY(-10vh); }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 200px;
+            height: 100vh;
+            background: rgba(0,0,0,0.75);
+            border-right: 2px solid cyan;
+            box-shadow: 0 0 20px cyan;
+            padding: 30px 20px;
+            z-index: 3;
+        }
+        .sidebar h2 {
+            color: cyan;
+            text-shadow: 0 0 10px cyan;
+            margin-bottom: 30px;
+        }
+        .nav-item {
+            margin: 20px 0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-item:hover {
+            color: cyan;
+            text-shadow: 0 0 8px cyan;
+        }
+
+        /* Table container */
+        .main {
+            margin-left: 240px;
+            padding: 40px;
+        }
+
+        h1 {
+            text-shadow: 0 0 15px cyan;
+            color: cyan;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            font-size: 16px;
+            border: 1px solid cyan;
+            box-shadow: 0 0 20px cyan;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+            text-align: center;
+        }
+
+        th {
+            background: rgba(0, 255, 255, 0.15);
+            color: cyan;
+            text-shadow: 0 0 8px cyan;
+            border-bottom: 2px solid cyan;
+        }
+
+        tr:hover {
+            background: rgba(0,255,255,0.08);
+            transition: 0.2s;
+        }
+
+        .pass {
+            color: lime;
+            font-weight: bold;
+            text-shadow: 0 0 10px lime;
+        }
+
+        .fail {
+            color: red;
+            font-weight: bold;
+            text-shadow: 0 0 10px red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>NEON AI</h2>
+        <div class="nav-item" onclick="window.location.href='index.html'">Predict</div>
+        <div class="nav-item" onclick="window.location.href='history.html'">History</div>
+    </div>
+
+    <!-- Particles -->
+    <script>
+        for (let i = 0; i < 50; i++) {
+            let p = document.createElement("div");
+            p.classList.add("particle");
+            p.style.width = p.style.height = Math.random() * 8 + 4 + "px";
+            p.style.left = Math.random() * 100 + "vw";
+            p.style.animationDuration = Math.random() * 6 + 6 + "s";
+            document.body.appendChild(p);
+        }
+    </script>
+
+    <!-- Main History Section -->
+    <div class="main">
+        <h1>Prediction History</h1>
+
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Attendance</th>
+                    <th>Internal Marks</th>
+                    <th>Assignments</th>
+                    <th>GPA</th>
+                    <th>Prediction</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadHistory() {
+            try {
+                const res = await fetch("http://127.0.0.1:8000/history");
+                const data = await res.json();
+
+                let tableBody = document.querySelector("#historyTable tbody");
+                tableBody.innerHTML = "";
+
+                data.forEach(row => {
+                    let tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.attendance}</td>
+                        <td>${row.internal_marks}</td>
+                        <td>${row.assignments}</td>
+                        <td>${row.previous_gpa}</td>
+                        <td class="${row.prediction === 'Pass' ? 'pass' : 'fail'}">${row.prediction}</td>
+                        <td>${row.timestamp}</td>
+                    `;
+
+                    tableBody.appendChild(tr);
+                });
+
+            } catch (err) {
+                alert("Failed to load history: " + err);
+            }
+        }
+
+        loadHistory();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Performance Predictor</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #020202;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.4);
+            animation: float 10s infinite linear;
+            filter: blur(2px);
+        }
+
+        @keyframes float {
+            from { transform: translateY(110vh); }
+            to { transform: translateY(-10vh); }
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 200px;
+            height: 100vh;
+            background: rgba(0,0,0,0.75);
+            border-right: 2px solid cyan;
+            box-shadow: 0 0 20px cyan;
+            padding: 30px 20px;
+            z-index: 3;
+        }
+
+        .nav-item {
+            margin: 20px 0;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            color: cyan;
+        }
+
+        /* Main content */
+        .main-container {
+            margin-left: 240px;
+            height: 100vh;
+            width: calc(100vw - 240px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Neon Form Container */
+        .container {
+            width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid cyan;
+            background: rgba(10, 10, 10, 0.7);
+            box-shadow: 0 0 20px cyan;
+        }
+
+        label {
+            font-size: 14px;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid cyan;
+            background: #0b0b0b;
+            color: cyan;
+            margin-bottom: 15px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            box-shadow: 0 0 20px cyan;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            background: transparent;
+            border: 2px solid cyan;
+            color: cyan;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: cyan;
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        /* RESULT BOX */
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 24px;
+            padding: 15px;
+            border-radius: 12px;
+            display: hidden;
+            position: relative;
+        }
+
+        #closeBtn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            font-size: 22px;
+            color: cyan;
+            text-shadow: 0 0 10px cyan;
+        }
+
+        #closeBtn:hover {
+            color: red;
+            text-shadow: 0 0 10px red;
+        }
+
+        .pass {
+            border: 2px solid lime;
+            color: lime;
+            text-shadow: 0 0 10px lime;
+            box-shadow: 0 0 20px lime;
+        }
+
+        .fail {
+            border: 2px solid red;
+            color: red;
+            text-shadow: 0 0 10px red;
+            box-shadow: 0 0 20px red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="nav-item" onclick="window.location.href='index.html'">Predict</div>
+        <div class="nav-item" onclick="window.location.href='history.html'">History</div>
+    </div>
+
+    <!-- Floating neon particles -->
+    <script>
+        for (let i = 0; i < 60; i++) {
+            let p = document.createElement("div");
+            p.classList.add("particle");
+            p.style.width = p.style.height = Math.random() * 8 + 4 + "px";
+            p.style.left = Math.random() * 100 + "vw";
+            p.style.animationDuration = Math.random() * 6 + 6 + "s";
+            document.body.appendChild(p);
+        }
+    </script>
+
+    <!-- CENTERED FORM -->
+    <div class="main-container">
+        <div class="container">
+            <h2>Student Performance Predictor</h2>
+
+            <label>Attendance (%):</label>
+            <input id="a" type="number">
+
+            <label>Internal Marks (out of 20):</label>
+            <input id="b" type="number">
+
+            <label>Assignments Completed (1-10):</label>
+            <input id="c" type="number">
+
+            <label>Previous GPA (out of 10):</label>
+            <input id="d" type="number" step="0.1">
+
+            <button type="button" onclick="predict()">Predict</button>
+
+            <!-- RESULT BOX -->
+            <div id="result">
+                <span id="closeBtn" onclick="predict(event)">✖</span>
+                <span id="resultText"></span>
+            </div>
+        </div>
+    </div>
+        
+
+<script>
+async function predict(event) {
+    if (event) event.preventDefault();
+
+    let a = Number(document.getElementById("a").value);
+    let b = Number(document.getElementById("b").value);
+    let c = Number(document.getElementById("c").value);
+    let d = Number(document.getElementById("d").value);
+
+    let resultBox = document.getElementById("result");
+    let resultText = document.getElementById("resultText");
+
+    resultBox.style.display = "block";
+
+    try {
+        const res = await fetch("http://127.0.0.1:8000/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                attendance: a,
+                internal_marks: b,
+                assignments: c,
+                previous_gpa: d
+            })
+        });
+
+        const data = await res.json();
+        resultText.innerHTML = "Prediction: <b>" + data.Prediction + "</b>";
+
+        if (data.Prediction === "Pass") {
+            resultBox.className = "pass";
+        } else {
+            resultBox.className = "fail";
+        }
+
+    } catch (err) {
+        resultBox.className = "fail";
+        resultText.innerHTML = "Error: " + err;
+    }
+}
+
+
+</script>
+
+</body>
+</html>
