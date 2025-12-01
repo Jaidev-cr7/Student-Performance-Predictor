@@ -1,7 +1,8 @@
 fastapi
 uvicorn
+pydantic
 pandas
 scikit-learn
 joblib
-sqlite3
-sqlalchemy
+numpy
+python-multipart
